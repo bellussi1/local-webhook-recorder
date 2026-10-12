@@ -35,10 +35,12 @@ test('read commands never create databases; incompatible databases remain intact
   const dir=await mkdtemp(join(tmpdir(),'recorder-'));const path=join(dir,'missing.sqlite');
   try{
     assert.throws(()=>openStore(path,'read'));await assert.rejects(stat(path));
-    for(const setup of ['PRAGMA user_version=99','CREATE TABLE unrelated(x)']){
+    for(const setup of ['PRAGMA user_version=99','CREATE TABLE unrelated(x)','CREATE VIEW unrelated AS SELECT 1',
+      'CREATE TABLE events(seq INTEGER,id TEXT,received_at TEXT,method TEXT,path TEXT,headers TEXT,body BLOB,size_bytes INTEGER); PRAGMA user_version=1']){
       const db=new DatabaseSync(path);db.exec(setup);db.close();const before=await readFile(path);
-      assert.throws(()=>openStore(path,'write'));assert.deepEqual(await readFile(path),before);await rm(path);
+      assert.throws(()=>{const unexpected=openStore(path,'write');unexpected.close();});assert.deepEqual(await readFile(path),before);await rm(path);
     }
-    await writeFile(path,'not sqlite');const before=await readFile(path);assert.throws(()=>openStore(path,'write'));assert.deepEqual(await readFile(path),before);
+    await writeFile(path,'not sqlite');const before=await readFile(path);assert.throws(()=>{const unexpected=openStore(path,'write');unexpected.close();});assert.deepEqual(await readFile(path),before);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+

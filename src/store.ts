@@ -5,18 +5,21 @@ import {RecorderError} from './errors.js';
 import {selectHeaders} from './headers.js';
 
 const columns='id, received_at AS receivedAt, method, path, size_bytes AS sizeBytes';
+const schema='CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,received_at TEXT NOT NULL,method TEXT NOT NULL,path TEXT NOT NULL,headers TEXT NOT NULL,body BLOB NOT NULL,size_bytes INTEGER NOT NULL)';
+const normalized=(sql:string)=>sql.replace(/\s+/g,'').toLowerCase();
 export function openStore(path:string,mode:'write'|'read'):EventStore {
   let db:DatabaseSync|undefined;
   try{
     db=new DatabaseSync(path,{readOnly:mode==='read',timeout:1000});
     const version=Number(db.prepare('PRAGMA user_version').get()!.user_version);
     if(version===0&&mode==='write'){
-      if(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().length)throw new RecorderError('DB_SCHEMA_INVALID');
+      if(db.prepare("SELECT name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").all().length)throw new RecorderError('DB_SCHEMA_INVALID');
       db.exec(`BEGIN IMMEDIATE;
-        CREATE TABLE events (seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,received_at TEXT NOT NULL,method TEXT NOT NULL,path TEXT NOT NULL,headers TEXT NOT NULL,body BLOB NOT NULL,size_bytes INTEGER NOT NULL);
+        ${schema};
         PRAGMA user_version=1; COMMIT;`);
     }else if(version!==1)throw new RecorderError('DB_SCHEMA_INVALID');
-    // Preparing all expected columns also rejects incompatible v1 tables before use.
+    const objects=db.prepare("SELECT name,type,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").all();
+    if(objects.length!==1||objects[0]!.type!=='table'||objects[0]!.name!=='events'||normalized(String(objects[0]!.sql))!==normalized(schema))throw new RecorderError('DB_SCHEMA_INVALID');
     db.prepare(`SELECT ${columns},headers,body FROM events LIMIT 0`);
     const connection=db;
     const safe=<T>(action:()=>T):T=>{try{return action();}catch(error){if(error instanceof RecorderError)throw error;throw new RecorderError('DB_OPERATION_FAILED');}};
