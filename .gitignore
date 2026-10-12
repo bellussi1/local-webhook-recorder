@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.superpowers/
+*.tgz
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+.env*

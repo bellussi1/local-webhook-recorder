@@ -1,0 +1,22 @@
+{
+  "name": "local-webhook-recorder",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Record webhook requests locally and replay selected events to test handlers.",
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "MIT",
+  "author": "Enzo Bellussi",
+  "bin": {
+    "webhook-recorder": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2"
+  }
+}
