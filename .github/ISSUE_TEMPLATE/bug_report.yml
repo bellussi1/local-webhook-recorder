@@ -1,0 +1,24 @@
+name: Bug report
+description: Report incorrect checks or CLI behavior
+title: "bug: "
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+      description: Include the exit code and report. Remove sensitive values.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Use dummy variables and local endpoints; never include credentials.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Node version and package version
+    validations:
+      required: true
