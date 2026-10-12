@@ -8,10 +8,15 @@
   },
   "license": "MIT",
   "author": "Enzo Bellussi",
+  "repository": {"type":"git","url":"git+https://github.com/bellussi1/local-webhook-recorder.git"},
+  "bugs": {"url":"https://github.com/bellussi1/local-webhook-recorder/issues"},
+  "keywords": ["webhook","cli","sqlite","replay","developer-tools"],
+  "files": ["dist","README.md","LICENSE"],
   "bin": {
     "webhook-recorder": "dist/cli.js"
   },
   "scripts": {
+    "prepack": "npm run build",
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.ts"
   },
